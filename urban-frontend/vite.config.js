@@ -5,6 +5,12 @@ import vue from '@vitejs/plugin-vue';
 // https://vitejs.dev/config/
 export default defineConfig(() => {
     return {
+        preview: {
+            port: 3001,
+          },
+        server: {
+            port: 3000,
+          },
         plugins: [vue()],
         resolve: {
             alias: {

@@ -5,7 +5,6 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "start": "serve dist -s -n -L -p $PORT",
         "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
     },
     "dependencies": {
@@ -21,8 +20,7 @@
         "primeicons": "^6.0.1",
         "primevue": "3.28.0",
         "vue": "^3.2.41",
-        "vue-router": "^4.1.5",
-        "serve": "^14.2.4"
+        "vue-router": "^4.1.5"
     },
     "devDependencies": {
         "@rushstack/eslint-patch": "^1.1.4",

@@ -7,8 +7,8 @@ use Slim\Factory\AppFactory;
 use App\Middleware\CORS;
 
 // Cargar las variables de entorno desde .env
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
-$dotenv->load();
+//$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+//dotenv->load();
 
 // Inicializar la base de datos
 new Database();

@@ -3,9 +3,9 @@ namespace App\Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use App\Models\Solicitud;
+use App\Models\Producto;
 
-class SolicitudController {
+class ProductoController {
     public function index(Request $request, Response $response) {
         try {
             $queryParams = $request->getQueryParams();
@@ -13,47 +13,45 @@ class SolicitudController {
             $top = 20; // Número de registros por página
             $offset = $top * ($pagina - 1); // Calcular OFFSET
     
-            // Consulta con paginación
-           // $solicitudes = Solicitud::skip($offset)->take($top)->get();
-           // Consulta con paginación y ordenación
-            $solicitudes = Solicitud::orderBy('fecha_agenda', 'desc') // Ordenar por fecha en orden descendente
+            // Obtener todos los productos
+           $productos = Producto::orderBy('nombre', 'asc') // Ordenar por fecha en orden descendente
             ->skip($offset) // Aplicar el OFFSET
             ->take($top) // Aplicar el límite (LIMIT)
             ->get();
             
-            $total_records = Solicitud::count(); // Total de registros
+            $total_records = Producto::count(); // Contar el total de registros
     
-            $data = $solicitudes->map(function ($solicitud) {
+            // Formatear los datos según el formato requerido
+            $data = $productos->map(function ($producto) {
                 return [
-                    'type' => 'solicitud',
-                    'id' => $solicitud->id_solicitud,
+                    'type' => 'producto',
+                    'id' => $producto->id_producto,
                     'attributes' => [
-                        'nombre_cliente' => $solicitud->nombre_cliente,
-                        'fecha_agenda' => $solicitud->fecha_agenda,
-                        'hora_inicio' => $solicitud->hora_inicio,
-                        'hora_fin' => $solicitud->hora_fin,
-                        'cant_horas' => $solicitud->cant_horas,
-                        'telefono' => $solicitud->telefono,
-                        'fecha_registro' => $solicitud->fecha_registro,
-                        'estado_reserva' => $solicitud->estado_reserva,
+                        'nombre' => $producto->nombre,
+                        'precio_venta' => $producto->precio_venta,
+                        'tipo' => $producto->tipo,
+                        'estado' => $producto->estado
                     ]
                 ];
             });
     
+            // Respuesta final
             $response_data = [
                 'data' => $data,
                 'meta' => [
-                    'total_records' => $total_records, 
+                    'total_records' => $total_records
                 ]
             ];
     
+            // Escribir la respuesta en formato JSON
             $response->getBody()->write(json_encode($response_data));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            // Manejo de errores
             $error = [
                 'error' => true,
-                'message' => 'Error al obtener las solicitudes: ' . $e->getMessage()
+                'message' => 'Error al obtener los productos: ' . $e->getMessage()
             ];
             $response->getBody()->write(json_encode($error));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
@@ -62,26 +60,20 @@ class SolicitudController {
     
     public function dropdown(Request $request, Response $response) {
         try {
+
+            
             // Obtener todos los productos necesarios
-//            $solicitudes = Solicitud::select('id_solicitud', 'nombre_cliente', 'fecha_agenda', 'hora_inicio', 'hora_fin', 'telefono')->get();
-
-            $solicitudes = Solicitud::select('id_solicitud', 'nombre_cliente', 'fecha_agenda', 'hora_inicio', 'hora_fin', 'telefono')
-                ->where('estado_reserva', 'CO')
-                ->get();
-
-            // 'name' => $solicitud->nombre_cliente, 'solicitud->nombre_cliente . ' - Tel: ' . $solicitud->telefono,
-
+            $productos = Producto::select('id_producto', 'nombre','precio_venta')->get();
+    
+            // 'code' => (string) $producto->id_producto, para enviar como numero el id de producto, en code
             // Formatear los datos
-            $data = $solicitudes->map(function ($solicitud) {
+            $data = $productos->map(function ($producto) {
                 return [
-                    'code' =>  $solicitud->id_solicitud, // (string) $solicitud->id_solicitud,
-                    'name' => $solicitud->nombre_cliente . ' - Tel: ' . $solicitud->telefono,
-                    'fecha_agenda' => $solicitud->fecha_agenda,
-                    'hora_inicio' => $solicitud->hora_inicio, // Sin coma
-                    'hora_fin' => $solicitud->hora_fin,       // Sin coma
+                    'code' => $producto->id_producto,
+                    'name' => $producto->id_producto . ' - ' . $producto->nombre,
+                    'precio' => $producto->precio_venta
                 ];
             });
-            
     
             // Responder con los datos formateados
             $response->getBody()->write(json_encode($data));
@@ -96,27 +88,63 @@ class SolicitudController {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
+    
  
+    // public function show(Request $request, Response $response, $args) {
+    //     $productoId = $args['id']; // Obtener el ID del producto desde los argumentos de la ruta
+    
+    //     try {
+    //         // Intentar encontrar el producto
+    //         $producto = Producto::findOrFail($productoId);
+    
+    //         // Formatear la respuesta en el formato esperado
+    //         $data = [
+    //             'type' => 'producto',
+    //             'id' => $producto->id_producto,
+    //             'attributes' => [
+    //                 'nombre' => $producto->nombre,
+    //                 'precio_venta' => $producto->precio_venta,
+    //                 'tipo' => $producto->tipo,
+    //                 'estado' => $producto->estado,
+    //             ]
+    //         ];
+    
+    //         // Respuesta con los datos del producto
+    //         $response->getBody()->write(json_encode(['data' => $data]));
+    //         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    
+    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //         // Manejo del error si el producto no existe
+    //         $response->getBody()->write(json_encode([
+    //             'error' => 'Registro no encontrado'
+    //         ]));
+    //         return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+    
+    //     } catch (\Exception $e) {
+    //         // Manejo de otros errores
+    //         $response->getBody()->write(json_encode([
+    //             'error' => 'Error al obtener el producto',
+    //             'message' => $e->getMessage()
+    //         ]));
+    //         return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    //     }
+    // }
+
     public function show(Request $request, Response $response, $args) {
-        $solicitudId = $args['id']; // Obtener el ID del solicitud desde los argumentos de la ruta
+        $productoId = $args['id']; // Obtener el ID del producto desde los argumentos de la ruta
     
         try {
-            // Intentar encontrar la solicitud
-            $solicitud = Solicitud::findOrFail($solicitudId);
+            // Intentar encontrar el producto
+            $producto = Producto::findOrFail($productoId);
     
             // Formatear la respuesta en el formato solicitado
             $data = [
-                'type' => 'solicitud',
-                'id' => (string) $solicitud->id_solicitud, // ID como cadena
-                'attributes' => [ 
-                    'nombre_cliente' => $solicitud->nombre_cliente,
-                    'fecha_agenda' => $solicitud->fecha_agenda,
-                    'hora_inicio' => $solicitud->hora_inicio,
-                    'hora_fin' => $solicitud->hora_fin,
-                    'cant_horas' => $solicitud->cant_horas,
-                    'telefono' => $solicitud->telefono,
-                    'fecha_registro' => $solicitud->fecha_registro,
-                    'estado_reserva' => $solicitud->estado_reserva,
+                'type' => 'producto',
+                'id' => (string) $producto->id_producto, // ID como cadena
+                'attributes' => [
+                    'nombre' => $producto->nombre ?? null, 
+                    'precio_venta' => (string) $producto->precio_venta ?? null,
+                    'estado' => (string) $producto->estado ?? null
                 ]
             ];
     
@@ -134,7 +162,7 @@ class SolicitudController {
         } catch (\Exception $e) {
             // Manejo de otros errores
             $response->getBody()->write(json_encode([
-                'error' => 'Error al obtener la solicitud',
+                'error' => 'Error al obtener el producto',
                 'message' => $e->getMessage()
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
@@ -156,8 +184,8 @@ class SolicitudController {
         }
     
         try {
-            // Crear la solicitud
-            $solicitud = Solicitud::create($data);
+            // Crear el producto
+            $producto = Producto::create($data);
     
             // Respuesta de éxito
             $response->getBody()->write(json_encode([
@@ -179,7 +207,7 @@ class SolicitudController {
     }
     
     public function update(Request $request, Response $response, $args) {
-        $solicitudId = $args['id'];
+        $productoId = $args['id'];
         $rawData = (string) $request->getBody();
         $data = json_decode($rawData, true);
     
@@ -191,18 +219,18 @@ class SolicitudController {
         }
     
         try {
-            // Intentar encontrar la solicitud
-            $solicitud = Solicitud::findOrFail($solicitudId);
-            $solicitud->update($data);
+            // Intentar encontrar el producto
+            $producto = Producto::findOrFail($productoId);
+            $producto->update($data);
     
             $response->getBody()->write(json_encode([
                 'message' => 'Actualizado exitosamente',
-                'solicitud' => $solicitud->toArray()
+                'producto' => $producto->toArray()
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // Manejo del error si la solicitud no existe
+            // Manejo del error si el producto no existe
             $response->getBody()->write(json_encode([
                 'error' => 'Registro no encontrado'
             ]));
@@ -220,10 +248,10 @@ class SolicitudController {
     
     
     public function delete(Request $request, Response $response, $args) {
-        $solicitudId = $args['id']; // Cambia 'id' a 'solicitud'
+        $productoId = $args['id']; // Cambia 'id' a 'producto'
     
-        $solicitud = Solicitud::findOrFail($solicitudId); // Encuentra la solicitud o lanza un error si no existe
-        $solicitud->delete(); // Elimina la solicitud
+        $producto = Producto::findOrFail($productoId); // Encuentra el producto o lanza un error si no existe
+        $producto->delete(); // Elimina el producto
     
         $response->getBody()->write(json_encode(['message' => 'Eliminado exitosamente']));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);

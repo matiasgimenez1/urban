@@ -6,6 +6,38 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use App\Models\Consumicion;
 
 class ConsumicionController {
+
+    public function getMaxId(Request $request, Response $response) {
+        try {
+            // Obtener el valor máximo de id_agendamiento
+            $maxId = AgendamientoCab::max('id_agendamiento');
+    
+            // Preparar la respuesta en el formato solicitado
+            $response_data = [
+                'data' => [
+                    [
+                        'type' => 'maxAgendamiento',
+                        'attributes' => [
+                            'maxID' => $maxId ?? 0 // Si no hay registros, devolver 0
+                        ]
+                    ]
+                ]
+            ];
+    
+            // Escribir la respuesta en el cuerpo
+            $response->getBody()->write(json_encode($response_data));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            $errorResponse = [
+                'error' => true,
+                'message' => $e->getMessage()
+            ];
+            $response->getBody()->write(json_encode($errorResponse));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+
     // Listar consumiciones con paginación
     public function index(Request $request, Response $response) {
         try {
@@ -53,68 +85,180 @@ class ConsumicionController {
         }
     }
 
-    // Mostrar una consumición por ID
-    public function show(Request $request, Response $response, $args) {
-        $itemId = $args['id'];
+    // public function show(Request $request, Response $response, $args)
+    // {
+    //     try {
+    //         $idAgendamiento = $args['id_agendamiento'];
+    //         $item = $args['item'];
+    
+    //         // Busca la consumición con ambos parámetros
+    //         $consumicion = Consumicion::where('id_agendamiento', $idAgendamiento)
+    //                       ->where('item', $item)
+    //                       ->orderBy('item', 'asc') // Si necesitas orden específico
+    //                       ->first();
+                          
+    //         // Verificar si se encontró la consumición
+    //         if (!$consumicion) {
+    //             $response->getBody()->write(json_encode([
+    //                 'data' => null,
+    //                 'message' => 'Consumición no encontrada'
+    //             ]));
+    //             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+    //         }
+    
+    //         // Formatear la respuesta
+    //         $responseData = [
+    //             'data' => [
+    //                 'type' => 'consumicion',
+    //                 'id' => "{$consumicion->id_agendamiento}-{$consumicion->item}", // Clave compuesta como ID
+    //                 'attributes' => [
+    //                     'id_agendamiento' => $consumicion->id_agendamiento,
+    //                     'item' => $consumicion->item
+    //                 ],
+    //                 'relationships' => [
+    //                     'detalles' => [
+    //                         'data' => [
+    //                             [
+    //                                 'type' => 'detalle',
+    //                                 'id' => "{$consumicion->id_agendamiento}-{$consumicion->item}", // Clave compuesta como ID
+    //                                 'attributes' => [
+    //                                     'producto' => $consumicion->producto,
+    //                                     'cantidad' => $consumicion->cantidad,
+    //                                     'precio_venta' => $consumicion->precio_venta
+    //                                 ]
+    //                             ]
+    //                         ]
+    //                     ]
+    //                 ]
+    //             ]
+    //         ];
+    
+    //         $response->getBody()->write(json_encode($responseData));
+    //         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    //     } catch (\Exception $e) {
+    //         $response->getBody()->write(json_encode([
+    //             'error' => 'Error al obtener la consumición',
+    //             'message' => $e->getMessage()
+    //         ]));
+    //         return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    //     }
+    // }
+    
+    public function show(Request $request, Response $response, $args)
+{
+    try {
+        $idAgendamiento = $args['id_agendamiento'];
+        $item = $args['item'];
 
-        try {
-            $consumicion = Consumicion::findOrFail($itemId);
+        // Busca todas las consumiciones que coincidan con los parámetros
+        $consumiciones = Consumicion::where('id_agendamiento', $idAgendamiento)
+                        ->where('item', $item)
+                        ->orderBy('item', 'asc') // Si necesitas orden específico
+                        ->get(); // Obtener múltiples registros
 
-            $data = [
-                'type' => 'consumicion',
-                'id' => $consumicion->id_item,
-                'attributes' => [
-                    'id_agendamiento' => $consumicion->id_agendamiento,
-                    'producto' => $consumicion->producto,
-                    'cantidad' => $consumicion->cantidad,
-                    'precio_venta' => $consumicion->precio_venta
-                ]
-            ];
-
-            $response->getBody()->write(json_encode(['data' => [$data]]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        // Verificar si se encontraron consumiciones
+        if ($consumiciones->isEmpty()) {
             $response->getBody()->write(json_encode([
-                'error' => 'Registro no encontrado'
+                'data' => null,
+                'message' => 'Consumiciones no encontradas'
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
-        } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
-                'error' => 'Error al obtener la consumición',
-                'message' => $e->getMessage()
-            ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
+
+        // Formatear la respuesta
+        $responseData = [
+            'data' => [
+                'type' => 'consumicion',
+                'id' => "{$idAgendamiento}-{$item}", // Clave compuesta como ID
+                'attributes' => [
+                    'id_agendamiento' => $idAgendamiento,
+                    'item' => $item
+                ],
+                'relationships' => [
+                    'detalles' => [
+                        'data' => $consumiciones->map(function ($consumicion) {
+                            return [
+                                'type' => 'detalle',
+                                'id' => "{$consumicion->id_agendamiento}-{$consumicion->item}", // Clave compuesta como ID
+                                'attributes' => [
+                                    'producto' => $consumicion->producto,
+                                    'cantidad' => $consumicion->cantidad,
+                                    'precio_venta' => $consumicion->precio_venta
+                                ]
+                            ];
+                        })
+                    ]
+                ]
+            ]
+        ];
+
+        $response->getBody()->write(json_encode($responseData));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    } catch (\Exception $e) {
+        $response->getBody()->write(json_encode([
+            'error' => 'Error al obtener las consumiciones',
+            'message' => $e->getMessage()
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
+}
+
 
     // Crear una nueva consumición
     public function create(Request $request, Response $response) {
-        $data = json_decode((string)$request->getBody(), true);
-
-        if (is_null($data) || !is_array($data)) {
+        $input = json_decode($request->getBody(), true);
+    
+        if (!isset($input['detail']) || !is_array($input['detail'])) {
             $response->getBody()->write(json_encode([
-                'error' => 'No se recibieron datos válidos'
+                'error' => 'Datos no válidos',
+                'message' => 'El campo detail es requerido y debe ser un array'
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
-
-        try {
-            $consumicion = Consumicion::create($data);
-
-            $response->getBody()->write(json_encode([
-                'message' => 'Consumición creada exitosamente',
-                'data' => $consumicion
-            ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
-        } catch (\Exception $e) {
-            $response->getBody()->write(json_encode([
-                'error' => 'Error al crear la consumición',
-                'message' => $e->getMessage()
-            ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    
+        $errors = [];
+        $success = [];
+    
+        foreach ($input['detail'] as $detail) {
+            try {
+                // Validar campos requeridos
+                if (!isset($detail['id_agendamiento'], $detail['item'], $detail['producto'], $detail['cantidad'], $detail['precio_venta'])) {
+                    $errors[] = [
+                        'detail' => $detail,
+                        'error' => 'Faltan campos requeridos'
+                    ];
+                    continue;
+                }
+    
+                // Crear la consumición
+                $consumicion = new Consumicion();
+                $consumicion->id_agendamiento = $detail['id_agendamiento'];
+                $consumicion->item = $detail['item'];
+                $consumicion->producto = $detail['producto'];
+                $consumicion->cantidad = $detail['cantidad'];
+                $consumicion->precio_venta = $detail['precio_venta'];
+                $consumicion->save();
+    
+                $success[] = [
+                    'id' => $consumicion->id,
+                    'message' => 'Consumición creada correctamente'
+                ];
+            } catch (\Exception $e) {
+                $errors[] = [
+                    'detail' => $detail,
+                    'error' => $e->getMessage()
+                ];
+            }
         }
+    
+        $response->getBody()->write(json_encode([
+            'success' => $success,
+            'errors' => $errors
+        ]));
+    
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(count($errors) ? 207 : 201);
     }
-
+    
     // Actualizar una consumición
     public function update(Request $request, Response $response, $args) {
         $itemId = $args['id'];

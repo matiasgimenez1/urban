@@ -26,7 +26,7 @@ export const getProducto = async (id) => {
 
 export const getProductosDropdown = async (params = {}) => {
     try {
-        const response = await api.get(`/usuario/productos/dropdown`, {
+        const response = await api.get(`/productos/dropdown`, {
             params: params
         });
         return response.data;

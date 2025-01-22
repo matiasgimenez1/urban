@@ -9,11 +9,10 @@ class Database {
 
         $capsule->addConnection([
             'driver' => 'pgsql',
-            'host' => 'autorack.proxy.rlwy.net',
-            'port' => '47478',
-            'database' => 'railway',
+            'host' => 'localhost',
+            'database' => 'paintball',
             'username' => 'postgres',
-            'password' => 'EilJhYIdChoIIxhJKbIgqONEzCrCxDPw',
+            'password' => '123',
             'charset' => 'utf8',
             'collation' => 'utf8_unicode_ci',
             'prefix' => '',

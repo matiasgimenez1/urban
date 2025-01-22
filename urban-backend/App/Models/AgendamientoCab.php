@@ -15,8 +15,7 @@ class AgendamientoCab extends Model
         'fecha',
         'hora_ini',
         'hora_fin',
-        'estado',
-        'usuario_agenda'
+        'estado' 
     ];
     
     // Relación con los detalles

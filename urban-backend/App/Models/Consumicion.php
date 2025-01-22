@@ -9,8 +9,9 @@ class Consumicion extends Model
     public $timestamps = false; // No utiliza las columnas created_at y updated_at
 
     // No se define una clave primaria explícita, pero puedes personalizar métodos como `save` si es necesario.
-    protected $primaryKey = null; // Se utiliza clave compuesta
+    //protected $primaryKey = null; // Se utiliza clave compuesta
     public $incrementing = false; // Claves primarias no autoincrementables
+    protected $primaryKey = ['item', 'id_agendamiento']; // Clave primaria compuesta
 
     // Campos que pueden ser asignados masivamente
     protected $fillable = [
@@ -21,15 +22,10 @@ class Consumicion extends Model
         'precio_venta'
     ];
 
-    // Relación con la tabla de agendamientos
-    public function agendamiento()
-    {
-        return $this->belongsTo(AgendamientoCab::class, 'id_agendamiento', 'id_agendamiento');
-    }
-
-    // Relación con la tabla de productos
-    public function productoInfo()
-    {
-        return $this->belongsTo(Producto::class, 'producto', 'id_producto');
-    }
+    // public function detalles()
+    // {
+    //     return $this->hasMany(Consumicion::class, 'id_agendamiento', 'item')
+    //                 ->where('item', $this->item);
+    // }
+ 
 }

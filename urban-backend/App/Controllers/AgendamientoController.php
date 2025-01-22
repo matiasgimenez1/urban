@@ -220,51 +220,129 @@ class AgendamientoController
     }
         
 
-    // Actualizar un agendamiento existente
+    // // Actualizar un agendamiento existente
+    // public function update(Request $request, Response $response, $args)
+    // {
+    //     $idAgendamiento = $args['id'];
+    //     $data = $request->getParsedBody();
+
+    //     try {
+
+    //           // Validar si 'master' existe
+    //     if (!isset($data['master']) || $data['master'] === null) {
+    //         return $response->withJson(['error' => '"master" no está presente o es nulo'], 400);
+    //     }
+
+
+    //         // Iniciar transacción
+    //         Capsule::connection()->beginTransaction();
+    
+    //         // Actualizar la cabecera
+    //         $cabecera = AgendamientoCab::findOrFail($idAgendamiento);
+  
+
+    //         $cabecera->update($data['master']);
+
+    //         $response->getBody()->write(json_encode([
+    //             $data['master']
+    //         ]));
+    
+    
+    //         // Actualizar los detalles
+    //         AgendamientoDet::where('id_agendamiento', $idAgendamiento)->delete(); // Eliminar los detalles existentes
+    //         foreach ($data['detail'] as $index => $detalle) {
+    //             AgendamientoDet::create([
+    //                 'item' => $index + 1,
+    //                 'id_agendamiento' => $idAgendamiento,
+    //                 'jugador' => $detalle['jugador']
+    //             ]);
+    //         }
+    
+    //         // Confirmar transacción
+    //         Capsule::connection()->commit();
+    
+    //         $response->getBody()->write(json_encode([
+    //             'message' => 'Agendamiento actualizado exitosamente'
+    //         ]));
+    
+    //         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    //     } catch (\Exception $e) {
+    //         // Revertir transacción en caso de error
+    //         Capsule::connection()->rollBack();
+    
+    //         $response->getBody()->write(json_encode([
+    //             'error' => 'Error al actualizar el agendamiento',
+    //             'message' => $e->getMessage()
+    //         ]));
+    
+    //         return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    //     }
+    // }
+    
+
     public function update(Request $request, Response $response, $args)
-    {
-        $idAgendamiento = $args['id'];
-        $data = $request->getParsedBody();
-    
-        try {
-            // Iniciar transacción
-            \DB::beginTransaction();
-    
-            // Actualizar la cabecera
-            $cabecera = AgendamientoCab::findOrFail($idAgendamiento);
-            $cabecera->update($data['master']);
-    
-            // Actualizar los detalles
-            AgendamientoDet::where('id_agendamiento', $idAgendamiento)->delete(); // Eliminar los detalles existentes
-            foreach ($data['detail'] as $index => $detalle) {
-                AgendamientoDet::create([
-                    'item' => $index + 1,
-                    'id_agendamiento' => $idAgendamiento,
-                    'jugador' => $detalle['jugador']
-                ]);
-            }
-    
-            // Confirmar transacción
-            \DB::commit();
-    
-            $response->getBody()->write(json_encode([
-                'message' => 'Agendamiento actualizado exitosamente'
-            ]));
-    
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-        } catch (\Exception $e) {
-            // Revertir transacción en caso de error
-            \DB::rollBack();
-    
-            $response->getBody()->write(json_encode([
-                'error' => 'Error al actualizar el agendamiento',
-                'message' => $e->getMessage()
-            ]));
-    
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-        }
+{
+    $idAgendamiento = $args['id'];
+    $rawBody = $request->getBody()->getContents();
+    $data = json_decode($rawBody, true);
+
+    // Validar el cuerpo de la solicitud
+    if (!$data || !isset($data['master']) || !isset($data['detail'])) {
+        $response->getBody()->write(json_encode([
+            'error' => 'El cuerpo de la petición debe contener las claves "master" y "detail".'
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
     }
-    
+
+    // Validar que 'detail' sea un array no vacío
+    if (!is_array($data['detail']) || empty($data['detail'])) {
+        $response->getBody()->write(json_encode([
+            'error' => 'La clave "detail" debe ser un array no vacío.'
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+    }
+
+    try {
+        // Iniciar la transacción
+        Capsule::connection()->beginTransaction();
+
+        // Actualizar la cabecera
+        $masterData = $data['master'];
+        $cabecera = AgendamientoCab::findOrFail($idAgendamiento); // Buscar cabecera existente
+        $cabecera->update($masterData); // Actualizar con los nuevos datos
+
+        // Eliminar los detalles existentes
+        AgendamientoDet::where('id_agendamiento', $idAgendamiento)->delete();
+
+        // Crear los nuevos detalles
+        foreach ($data['detail'] as $detalle) {
+            AgendamientoDet::create([
+                'id_agendamiento' => $idAgendamiento,
+                'item' => $detalle['item'],
+                'jugador' => $detalle['jugador']
+            ]);
+        }
+
+        // Confirmar la transacción
+        Capsule::connection()->commit();
+
+        $response->getBody()->write(json_encode([
+            'message' => 'Agendamiento actualizado exitosamente',
+            'id_agendamiento' => $idAgendamiento
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    } catch (\Exception $e) {
+        // Revertir la transacción en caso de error
+        Capsule::connection()->rollBack();
+
+        $response->getBody()->write(json_encode([
+            'error' => 'Error al actualizar el agendamiento',
+            'message' => $e->getMessage()
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    }
+}
+
 
     // Eliminar un agendamiento y sus detalles
     public function delete(Request $request, Response $response, $args)

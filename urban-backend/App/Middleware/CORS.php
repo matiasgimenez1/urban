@@ -5,7 +5,7 @@
 namespace App\Middleware;
 
 // Archivo: CORS.php
-namespace App\Middleware;
+//namespace App\Middleware;
 
 class CORS {
     public function __invoke($request, $handler) {

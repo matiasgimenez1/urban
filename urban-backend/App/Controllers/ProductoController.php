@@ -60,14 +60,17 @@ class ProductoController {
     
     public function dropdown(Request $request, Response $response) {
         try {
+             
             // Obtener todos los productos necesarios
-            $productos = Producto::select('id_producto', 'nombre')->get();
+            $productos = Producto::select('id_producto', 'nombre','precio_venta')->get();
     
+            // 'code' => (string) $producto->id_producto, para enviar como numero el id de producto, en code
             // Formatear los datos
             $data = $productos->map(function ($producto) {
                 return [
-                    'code' => (string) $producto->id_producto,
-                    'name' => $producto->id_producto . ' - ' . $producto->nombre
+                    'code' => $producto->id_producto,
+                    'name' => $producto->id_producto . ' - ' . $producto->nombre,
+                    'precio' => $producto->precio_venta
                 ];
             });
     

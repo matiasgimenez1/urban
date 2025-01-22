@@ -51,11 +51,11 @@ export const useAuthStore = defineStore('authStore', () => {
 
             api.defaults.headers.common['access-token'] = token.value;
  
-        } catch (error) {
-            debugger
+        } catch (error) { 
             if (error.response && [422, 401, 403].includes(error.response.status)) {
                 loginErrorMessage.value = error.response.data.message;
             }
+          
         }
     };
 

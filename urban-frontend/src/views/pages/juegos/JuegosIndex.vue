@@ -130,9 +130,7 @@ onMounted(fetchData);
                         <template #body="slotProps">
                             <div class="text-center text-sm">
                                 {{
-                                    slotProps.data.attributes.estado == 'PE'
-                                        ? 'PENDIENTE'
-                                        : slotProps.data.attributes.estado == 'IN'
+                                    slotProps.data.attributes.estado ==  'IN'
                                         ? 'EN CURSO'
                                         : slotProps.data.attributes.estado == 'FI'
                                         ? 'FINALIZADO'

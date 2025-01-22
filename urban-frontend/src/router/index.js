@@ -62,6 +62,19 @@ const routes = [
                 meta: { auth: true }
             },
             {
+                path: '/consumision/:idAgendamiento/:item/:jugador',
+                name: 'consumision',
+                component: () => import('@/views/pages/juegos/ConsumisionShow.vue'),
+                meta: { auth: true }
+            },
+            
+            {
+                path: '/consumision',
+                name: 'consumision-insert',
+                component: () => import('@/views/pages/juegos/ConsumisionShow.vue'),
+                meta: { auth: true }
+            },
+            {
                 path: '/productos',
                 name: 'productos',
                 component: () => import('@/views/pages/productos/ProductosIndex.vue')

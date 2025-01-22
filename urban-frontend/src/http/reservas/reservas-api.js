@@ -24,9 +24,9 @@ export const getReserva = async (id) => {
     }
 };
 
-export const getProductosDropdown = async (params = {}) => {
+export const getReservasDropdown = async (params = {}) => {
     try {
-        const response = await api.get(`/usuario/productos/dropdown`, {
+        const response = await api.get(`/solicitudes/dropdown`, {
             params: params
         });
         return response.data;

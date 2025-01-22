@@ -136,10 +136,10 @@ onMounted(fetchData);
                         <template #body="slotProps">
                             <div class="text-center text-sm">
                                 {{
-                                    slotProps.data.attributes.estado_reserva == 'PE'
-                                        ? 'PENDIENTE'
-                                        : slotProps.data.attributes.estado_reserva == 'CO'
-                                        ? 'CONFIRMADA' 
+                                    slotProps.data.attributes.estado_reserva == 'CO'
+                                        ? 'CONFIRMADA'
+                                        : slotProps.data.attributes.estado_reserva == 'FI'
+                                        ? 'FINALIZADA'  
                                         : slotProps.data.attributes.estado_reserva == 'CA'
                                         ? 'CANCELADA' 
                                         : 'DESCONOCIDO'

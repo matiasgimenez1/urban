@@ -4,11 +4,11 @@ require __DIR__ . '/../vendor/autoload.php';
 use Dotenv\Dotenv;
 use App\Database;
 use Slim\Factory\AppFactory;
-use App\Middleware\CORS;
+use App\Middleware\CORS;  
 
 // Cargar las variables de entorno desde .env
-//$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
-//dotenv->load();
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
 
 // Inicializar la base de datos
 new Database();

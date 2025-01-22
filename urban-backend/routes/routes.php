@@ -4,14 +4,15 @@ use App\Controllers\UserController;
 use App\Controllers\ProductoController;
 use App\Controllers\SolicitudController;
 use App\Controllers\AgendamientoController;
-use App\Controllers\ConsumisionController;
+use App\Controllers\ConsumicionController; 
+use App\Middleware\Token; 
 
 return function ($app) {
      // Ruta para generar el token JWT
      $app->post('/api/auth/token', AuthController::class . ':generateToken');
 
     // Rutas para los usuarios
-    $app->get('/users', UserController::class . ':index');
+    $app->get('/api/usuarios', UserController::class . ':index');             // Obtener todos los productos
 
     // Rutas para productos
     $app->get('/api/productos', ProductoController::class . ':index');             // Obtener todos los productos
@@ -22,7 +23,8 @@ return function ($app) {
     $app->delete('/api/productos/{id}', ProductoController::class . ':delete'); // Eliminar (baja) un producto
  
      // Rutas para solicitudes (reservas)
-     $app->get('/api/solicitudes', SolicitudController::class . ':index');             
+     $app->get('/api/solicitudes', SolicitudController::class . ':index');      
+     $app->get('/api/solicitudes/dropdown', SolicitudController::class . ':dropdown');       
      $app->get('/api/solicitudes/{id}', SolicitudController::class . ':show');          
      $app->post('/api/solicitudes', SolicitudController::class . ':create');     
      $app->put('/api/solicitudes/{id}', SolicitudController::class . ':update');  
@@ -37,11 +39,11 @@ return function ($app) {
      $app->delete('/api/agendamientos/{id}', AgendamientoController::class . ':delete'); // Eliminar un agendamiento
 
        // Rutas para consumicion (reservas)
-       $app->get('/api/consumisiones', ConsumisionController::class . ':index');             
-       $app->get('/api/consumisiones/{id}', ConsumisionController::class . ':show');          
-       $app->post('/api/consumisiones', ConsumisionController::class . ':create');     
-       $app->put('/api/consumisiones/{id}', ConsumisionController::class . ':update');  
-       $app->delete('/api/consumisiones/{id}', ConsumisionController::class . ':delete'); 
+       $app->get('/api/consumiciones', ConsumicionController::class . ':index');             
+       $app->get('/api/consumiciones/{id_agendamiento}/{item}', ConsumicionController::class . ':show');          
+       $app->post('/api/consumiciones', ConsumicionController::class . ':create');     
+       $app->put('/api/consumiciones/{id}', ConsumicionController::class . ':update');  
+       $app->delete('/api/consumiciones/{id}', ConsumicionController::class . ':delete'); 
 
 
      

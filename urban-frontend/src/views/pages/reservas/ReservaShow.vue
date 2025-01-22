@@ -12,11 +12,15 @@ import { onClose } from '@/utils/functions';
 import { TIME_CLOSE } from '@/global/global.js';
 
 const id = router.currentRoute.value.params.id;
+const today = new Date().toISOString().split('T')[0]; // Obtiene la fecha actual en formato yyyy-mm-dd
+const now = new Date();
 
 const form = reactive({
     id_solicitud: null,
+    fecha_agenda: today,
+    hora_inicio: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
     cant_horas: 1, 
-    estado_reserva: 'PE' 
+    estado_reserva: 'CO' 
 });
 
 const toast = useToast();
@@ -77,23 +81,21 @@ const handleSave = async () => {
     if (await v$.value.$validate()) {
         let result;
         try {
-            if (form.fecha_agenda instanceof Date && !isNaN(form.fecha_agenda)) {
-                form.fecha_agenda = form.fecha_agenda.toISOString().split('T')[0];
-            }
-            if (form.hora_inicio instanceof Date && !isNaN(form.hora_inicio)) {
-                form.hora_inicio = form.hora_inicio.toLocaleTimeString('en-US', { hour12: false });
-            }
-            if (form.hora_fin instanceof Date && !isNaN(form.hora_fin)) {
-                form.hora_fin = form.hora_fin.toLocaleTimeString('en-US', { hour12: false });
-            }
+             if (form.fecha_agenda instanceof Date && !isNaN(form.fecha_agenda)) {
+                 form.fecha_agenda = form.fecha_agenda.toISOString().split('T')[0];
+             }
+             if (form.hora_inicio instanceof Date && !isNaN(form.hora_inicio)) {
+                 form.hora_inicio = form.hora_inicio.toLocaleTimeString('en-US', { hour12: false });
+             }
+            // if (form.hora_fin instanceof Date && !isNaN(form.hora_fin)) {
+            //     form.hora_fin = form.hora_fin.toLocaleTimeString('en-US', { hour12: false });
+            // }
 
             if (id && form.id_solicitud) {
                 result = await updateReserva({ ...form, id: form.id_solicitud });
             } else {
                 result = await insertReserva(form);
-            }
-
-            console.log('Respuesta del servidor:', result);
+            } 
 
             if (result && result.data) {
                 await executeOperationWithFeedback(result);
@@ -101,6 +103,7 @@ const handleSave = async () => {
                 throw new Error('Respuesta inválida del servidor');
             }
 
+            
             setTimeout(() => {
                 onClose();
             }, TIME_CLOSE);
@@ -126,20 +129,25 @@ const initializeComponent = async () => {
     }
 };
 
-// Watch para calcular hora_fin
+// // Watch para calcular hora_fin
 // watch(
 //     () => [form.hora_inicio, form.cant_horas],
 //     ([horaInicio, cantHoras]) => {
 //         if (horaInicio && cantHoras) {
-//             const [hours, minutes] = horaInicio.split(':').map(Number);
-//             const date = new Date();
-//             date.setHours(hours + Number(cantHoras), minutes);
-//             form.hora_fin = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+//             const date = new Date(horaInicio); // Convierte horaInicio a un objeto Date
+//             const hours = date.getHours(); // Extrae las horas
+//             const minutes = date.getMinutes(); // Extrae los minutos
+
+//             const finalHours = (hours + Number(cantHoras)) % 24; // Suma las horas y ajusta al formato 24h
+//             form.hora_fin = `${String(finalHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`; // Formato HH:MM:SS
 //         } else {
-//             form.hora_fin = null;
+//             form.hora_fin = null; // Resetea hora_fin si los valores son inválidos
 //         }
 //     }
 // );
+
+
+
 
 onMounted(async () => {
     await initializeComponent();
@@ -164,34 +172,29 @@ onMounted(async () => {
                     <ErrorMessages :errors="v$.nombre_cliente.$errors" />
                 </div>
 
-                <div class="field col-12 lg:col-3 px-1 text-center">
+                <div class="field col-12 lg:col-2 px-1 text-center">
                     <label for="telefono">Teléfono</label>
-                    <InputText v-model="form.telefono" id="telefono" type="text" class="text-xs text-center" />
+                    <InputText v-model="form.telefono" id="telefono" type="text" class="text-xs text-center" placeholder="09xx xxx xxx" />
                     <ErrorMessages :errors="v$.telefono.$errors" />
                 </div>
        
                 <div class="field col-12 md:col-2 px-1 text-center">
                     <label for="fecha_agenda">Fecha</label>
-                    <Calendar v-model="form.fecha_agenda" id="fecha_agenda" dateFormat="yy-mm-dd" class="text-xs" input-class="text-center" />
+                    <Calendar v-model="form.fecha_agenda" id="fecha_agenda"  showIcon  class="text-xs" input-class="text-center" />
                     <ErrorMessages :errors="v$.fecha_agenda.$errors" />
                 </div>
 
-                <div class="field col-12 md:col-1 px-1 text-center">
+                <div class="field col-12 md:col-2 px-1 text-center">
                     <label for="hora_inicio">Hora Inicio</label>
+                    <!-- hourFormat="24" -->
                     <Calendar
                         v-model="form.hora_inicio"
                         id="hora_inicio"
                         timeOnly
-                        hourFormat="24"
-                        input-class="text-center"
-                        class="text-xs"
+                        timeFormat="hh:mm" class="text-xs" input-class="text-center" :showIcon="true" icon="pi pi-clock"
                     />
                     <ErrorMessages :errors="v$.hora_inicio.$errors" />
                 </div>
-                
-
-                
-
                 <div class="field col-12 md:col-1 px-1 text-center">
                     <label for="cant_horas">Cant. Hs.</label>
                     <InputNumber
@@ -204,17 +207,16 @@ onMounted(async () => {
                     <ErrorMessages :errors="v$.cant_horas.$errors" />
                 </div> 
                 
-                <div class="field col-12 md:col-1 px-1 text-center" >
+                <div class="field col-12 md:col-2 px-0 text-center" >
                     <label for="hora_fin">Hora Fin</label>
-                    <Calendar
+                     <!-- hourFormat="24" -->
+                     <Calendar
                         v-model="form.hora_fin"
-                        id="hora_fin"
+                        id="hora_inicio"
                         timeOnly
-                        hourFormat="24"
-                        input-class="text-center"
-                        class="text-xs"
                         disabled
-                    /> 
+                        timeFormat="hh:mm" class="text-xs" input-class="text-center" :showIcon="true" icon="pi pi-clock"
+                    />
                 </div>
                 <div class="field col-12 md:col-2 px-1 text-center">
                     <label for="estado_reserva">Estado</label>
@@ -222,10 +224,10 @@ onMounted(async () => {
                         class="text-xs text-center"
                         id="estado_reserva"
                         v-model="form.estado_reserva"
-                        :options="[ 
-                            { name: 'PENDIENTE', code: 'PE' },
+                        :options="[  
                             { name: 'CONFIRMADA', code: 'CO' },
-                            { name: 'CANCELADA', code: 'CA' }
+                            { name: 'CANCELADA', code: 'CA' },
+                            { name: 'FINALIZADA', code: 'FI' }
                         ]"
                         optionLabel="name"
                         optionValue="code"

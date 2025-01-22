@@ -73,32 +73,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- Ranking de Jugadores -->
-        <div class="col-12 lg:col-6">
-            <div class="card h-full">
-                <div class="flex align-items-center justify-content-between mb-3">
-                    <h5 class="m-0">Ranking de Jugadores</h5>
-                    <div>
-                        <Button icon="pi pi-ellipsis-h" rounded text plain @click="toggleMenu"></Button>
-                        <Menu ref="menu5" :popup="true" :model="items2"> </Menu>
-                    </div>
-                </div>
-                <ul class="p-0 m-0 border-none list-none">
-                    <li v-for="player in rankingPlayers" :key="player.name" class="flex align-items-center py-3">
-                        <div class="flex align-items-center">
-                            <img :src="player.avatar" alt="Player Avatar" />
-                            <div class="ml-2">
-                                <div>{{ player.name }} - Categoría: {{ player.category }}</div>
-                                <small class="text-color-secondary">{{ player.email }}</small>
-                            </div>
-                        </div>
-                        <span class="ml-auto text-white p-1 text-sm font-medium border-round-xs" :class="player.position === 1 ? 'bg-gold' : player.position === 2 ? 'bg-silver' : 'bg-bronze'"> #{{ player.position }} </span>
-                        <span class="bg-teal-500 p-1 text-sm font-medium text-white border-round-xs ml-2">{{ player.points }} pts</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
+ 
     </div>
 </template>
 

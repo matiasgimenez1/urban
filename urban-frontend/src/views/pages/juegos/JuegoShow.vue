@@ -10,12 +10,13 @@ import FormButtons from '@/components/buttons/FormButtonsABM.vue';
 import ErrorMessages from '@/components/errors/ErrorMessages.vue';
 import { onClose } from '@/utils/functions';
 import { TIME_CLOSE } from '@/global/global.js';
-import FormDetailHeader from '@/components/headers/FormDetailHeader.vue';
+import FormDetailHeader from '@/components/headers/FormDetailHeader.vue'; 
+import { getReservasDropdown } from '@/http/reservas/reservas-api';
 
 const partidoId = router.currentRoute.value.params.id;
 const today = new Date().toISOString().split('T')[0]; // Obtiene la fecha actual en formato yyyy-mm-dd
 const now = new Date();
-
+const reservasData = ref([]);
 // Estado reactivo para el formulario.
 const form = reactive({
     master: {
@@ -28,6 +29,53 @@ const form = reactive({
 });
 const toast = useToast();
 const isLoading = ref(false);
+const isConsumicionModalVisible = ref(false);
+const consumicionData = reactive({ id_agendamiento: null, item: null });
+
+const validationRules = { 
+    id_partida: { required: helpers.withMessage(messages.required, required) },
+    estado: { required: helpers.withMessage(messages.required, required) },
+};
+
+const v$ = useVuelidate(validationRules, form.master);
+
+ 
+// Al abrir el modal
+const openConsumicionModal = (detail) => {
+    consumicionData.id_agendamiento = detail.id_agendamiento;
+    consumicionData.item = detail.item;
+    consumicionData.jugador = detail.jugador; // Asegúrate de tener esta propiedad en el detalle
+    isConsumicionModalVisible.value = true;
+};
+
+const handleSaveConsumicion = (data) => {
+    console.log("Consumiciones guardadas:", data);
+    isConsumicionModalVisible.value = false;
+};
+const onReservaChange = () => {
+    // Verificar que reservasData sea un array
+    if (Array.isArray(reservasData.value)) {
+        const selectedReserva = reservasData.value.find(
+            (reserva) => reserva.code === form.master.id_partida
+        );
+
+        if (selectedReserva) {
+            
+            // Asignar hora_inicio al campo hora_ini
+            form.master.fecha = selectedReserva.fecha_agenda || null;
+            form.master.hora_ini = selectedReserva.hora_inicio || null;
+            form.master.hora_fin = selectedReserva.hora_fin || null;
+
+            console.log("Hora inicial asignada:", form.master.hora_ini);
+        } else {
+            console.warn("No se encontró la reserva seleccionada.");
+        }
+    } else {
+        console.error("reservasData no es un array válido:", reservasData.value);
+    }
+};
+
+
 
 // Función para crear un nuevo ítem en el detalle.
 const createNewItemFunction = (index) => ({
@@ -45,13 +93,7 @@ const onDeleteRow = (index) => {
     form.detail.splice(index, 1);
 };
 
-// Reglas de validación para los campos del formulario maestro (proveedor y fecha).
-const validationRules = {
-    fecha: { required: helpers.withMessage(messages.required, required) } // La fecha es obligatoria.
-    //notas: { required: helpers.withMessage(messages.required, required) } // La fecha es obligatoria.
-};
-const v$ = useVuelidate(validationRules, form.master);
-
+ 
 // Función para cargar los datos.
 const fetchData = async () => {
     try {
@@ -71,6 +113,8 @@ const initializeComponent = async () => {
         form.master.id_agendamiento = null; // Dejar el ID vacío si es un nuevo registro
         await addNewItemToDetail(); // Añadir un ítem vacío por defecto.
     }
+    reservasData.value = await getReservasDropdown();
+    
 };
 
 // Función auxiliar para obtener un nuevo `partido_id`
@@ -120,7 +164,7 @@ const handleSave = async () => {
     try {
         const result = isInsert ? await insertPartido({ master: form.master, detail: form.detail }) : await updatePartido({ id: form.master.id_agendamiento, master: form.master, detail: form.detail });
 
-        if (result.status === 200 || result.status === 204) {
+        if (result.status === 200  || result.status === 201 || result.status === 204) {
             showToast('success', 'Guardado Exitoso');
             setTimeout(() => {
                 onClose();
@@ -139,7 +183,7 @@ const handleDelete = async () => {
     try {
         const result = await deletePartido({ id: form.master.id_agendamiento });
 
-        if (result.status === 204) {
+        if (result.status === 200  || result.status === 201 || result.status === 204) {
             toast.add({ severity: 'success', summary: 'Eliminación Exitosa', life: 2000 });
         } else {
             toast.add({ severity: 'error', summary: 'Error al Eliminar', life: 2000 });
@@ -150,41 +194,26 @@ const handleDelete = async () => {
         toast.add({ severity: 'error', summary: 'Error', detail: error.response.data.message });
     }
 };
-const navigateToConsumicion = (detail) => {
-    // Redirigir al componente de consumiciones con el ID del agendamiento y del detalle
+ 
+const openConsumisionManagement = (detail) => {
     router.push({
-        name: 'consumicion',
+        name: 'consumision',
         params: {
             idAgendamiento: detail.id_agendamiento,
-            item: detail.item
+            item: detail.item,
+            jugador: detail.jugador
         }
     });
 };
 
-const isConsumicionModalVisible = ref(false); // Estado del modal
-const consumicionData = reactive({ id_agendamiento: null, item: null }); // Datos del detalle seleccionado
-
-// Función para abrir el modal con los datos del detalle
-const openConsumicionModal = (detail) => {
-    consumicionData.id_agendamiento = detail.id_agendamiento;
-    consumicionData.item = detail.item;
-    isConsumicionModalVisible.value = true;
-};
-
-// Función para cerrar el modal
-const closeConsumicionModal = () => {
-    isConsumicionModalVisible.value = false;
-    consumicionData.id_agendamiento = null;
-    consumicionData.item = null;
-};
 
 // Cargar los datos al montar el componente.
 onMounted(async () => {
     isLoading.value = true;
     // Inicializar los datos
-    await initializeComponent();
-    isLoading.value = false;
-});
+    await initializeComponent(); 
+    
+}); 
 </script>
 
 <template>
@@ -197,17 +226,36 @@ onMounted(async () => {
                     <label for="">Juego ID</label>
                     <InputText v-model="form.master.id_agendamiento" id="" type="text" class="text-xs text-center" disabled />
                 </div>
-                <div class="field col-12 md:col-1 px-1 text-center">
-                    <label for="">Juego ID</label>
-                    <InputText v-model="form.master.id_solicitud" id="" type="text" class="text-xs text-center" disabled />
+              
+                <div class="field col-12 md:col-5 px-1 text-left">
+                    <label for="id_partida">Reserva ID</label>
+                    <Dropdown
+                        class="w-0rem"
+                        inputClass="font-normal"
+                        filter
+                        editable
+                        v-model="form.master.id_partida"
+                        :options="reservasData"
+                        optionLabel="name"
+                        optionValue="code"
+                        placeholder="Seleccione una reserva"
+                        @change="onReservaChange"
+                    >
+                        <template #option="slotProps">
+                            <div class="not-bold text-xs px-1">{{ slotProps.option.name }}</div>
+                        </template>
+                    </Dropdown>
+                    <ErrorMessages :errors="v$.id_partida.$errors" />
                 </div>
+ 
+ 
 
-                <div class="field col-12 md:col-2 px-1 text-center">
+                <div class="field col-12 md:col-2 px-2 text-center">
                     <label for="">Fecha</label>
-                    <Calendar v-model="form.master.fecha" inputClass="text-center" dateFormat="dd/mm/yy" id="" showIcon />
-                    <ErrorMessages :errors="v$.fecha.$errors" />
+                    <Calendar disabled v-model="form.master.fecha" inputClass="text-center" dateFormat="dd/mm/yy" id="" showIcon />
+                   
                 </div>
-                <div class="field col-12 md:col-1 px-1 text-center">
+                <div class="field col-12 md:col-1 px-2 text-center">
                     <label for="">Hr. Inicio</label>
                     <InputText
                         v-model="form.master.hora_ini"
@@ -215,6 +263,7 @@ onMounted(async () => {
                         type="text"
                         class="text-xs text-center"
                         maxlength="5"
+                        disabled
                         @input="
                             form.master.hora_ini = form.master.hora_ini
                                 .replace(/[^0-9]/g, '')
@@ -222,8 +271,10 @@ onMounted(async () => {
                                 .slice(0, 5)
                         "
                     />
-                </div>
-                <div class="field col-12 md:col-1 px-1 text-center">
+                </div>  
+                
+                 
+                <div class="field col-12 md:col-1 px-2 text-center">
                     <label for="">Hr. Fin</label>
                     <InputText
                         v-model="form.master.hora_fin"
@@ -231,6 +282,7 @@ onMounted(async () => {
                         type="text"
                         class="text-xs text-center"
                         maxlength="5"
+                        disabled
                         @input="
                             form.master.hora_fin = form.master.hora_fin
                                 .replace(/[^0-9]/g, '')
@@ -246,11 +298,9 @@ onMounted(async () => {
                         class="text-xs text-center"
                         id=""
                         v-model="form.master.estado"
-                        :options="[
-                            { name: 'PENDIENTE', code: 'PE' },
+                        :options="[ 
                             { name: 'EN CURSO', code: 'IN' },
                             { name: 'FINALIZADO', code: 'FI' },
-                            { name: 'PAUSADO', code: 'PA' },
                             { name: 'CANCELADO', code: 'XX' }
                         ]"
                         optionLabel="name"
@@ -258,13 +308,9 @@ onMounted(async () => {
                         placeholder=""
                         :style="{ width: '100%' }"
                     ></Dropdown>
+                    <ErrorMessages :errors="v$.estado.$errors" />
                 </div>
-
-                <!-- <div class="field col-12 md:col-5 px-1">
-                    <label for="nombre_generico">Notas</label>
-                    <Textarea v-model="form.master.notas" rows="2" id="notas" type="text" class="text-xs" />
-                    <ErrorMessages :errors="v$.notas.$errors" />
-                </div> -->
+ 
             </div>
 
             <FormDetailHeader class="surface-300 bg-white" @insert="addNewItemToDetail"></FormDetailHeader>
@@ -297,15 +343,7 @@ onMounted(async () => {
                         <InputText class="w-20rem" input-class="text-left" showButtons="true" v-model="slotProps.data.jugador" inputId="" />
                     </template>
                 </Column>
-
-                <!-- <Column field="cantidad" header="" headerClass="text-white bg-blue-500 text-sm" bodyClass=" text-black text-sm" class="text-left">
-                    <template #header>
-                        <div class="flex-1 text-left w-10rem">Observaciones</div>
-                    </template>
-                    <template #body="slotProps">
-                        <InputText class="w-29rem" input-class="text-left" showButtons="true" v-model="slotProps.data.notas" inputId="" />
-                    </template>
-                </Column> -->
+ 
                 <Column header="Acciones" headerClass="text-white bg-blue-500 text-sm" bodyClass=" text-black text-sm" class="text-right">
                     <template #header>
                         <div class="flex-1 text-right"></div>
@@ -313,37 +351,23 @@ onMounted(async () => {
                     <template #body="slotProps">
                         <Button @click="onDeleteRow(slotProps.index)" icon="pi pi-trash" class="mr-2 p-button-danger" />
                         <!-- Nuevo botón para gestionar consumiciones -->
-                        <Button icon="pi pi-shopping-cart" class="p-button-info" @click="openConsumicionModal(slotProps.data)" tooltip="Gestionar consumiciones" />
+                        <Button 
+            icon="pi pi-shopping-cart" 
+            class="p-button-info mr-2" 
+            @click="openConsumisionManagement(slotProps.data)" 
+            tooltip="Gestionar consumiciones" 
+        />
                     </template>
                 </Column>
             </DataTable>
-            <!-- Modal para Consumiciones -->
-            <Dialog v-model:visible="isConsumicionModalVisible" header="Gestión de Consumiciones" :style="{ width: '50vw' }">
-                <h5>Agendamiento: {{ consumicionData.id_agendamiento }}, Item: {{ consumicionData.item }}</h5>
-                <!-- Aquí agregas la tabla o formulario para gestionar las consumiciones -->
-                <p>Gestión de consumiciones para este detalle.</p>
-                <DataTable :value="consumiciones" :rows="5" paginator>
-                    <Column field="producto" header="Producto"></Column>
-                    <Column field="cantidad" header="Cantidad"></Column>
-                    <Column field="precio_venta" header="Precio Venta"></Column>
-                    <Column>
-                        <template #body="slotProps">
-                            <Button icon="pi pi-trash" class="p-button-danger" @click="deleteConsumicion(slotProps.data)" />
-                        </template>
-                    </Column>
-                </DataTable>
+            
 
-                <Button label="Agregar Consumición" icon="pi pi-plus" class="p-button-success mt-2" @click="addConsumicion" />
-                <Button label="Cerrar" icon="pi pi-times" class="p-button-danger" @click="closeConsumicionModal" />
-            </Dialog>
+
+
         </div>
     </div>
     <FormButtons @close="onClose()" @save="handleSave" @delete="handleDelete()">
-        <!-- <template #start>
-            <div :style="{ position: 'relative', height: '50px' }">
-                <SplitButton label="Útiles" :model="items" icon="pi pi-plus" @click="save" rounded class="mb-2"></SplitButton>
-            </div>
-        </template> -->
+        
     </FormButtons>
 </template>
 

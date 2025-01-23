@@ -12,7 +12,7 @@ class Database {
             //'host' => 'localhost',
             //'database' => 'paintball',
             'host' => 'autorack.proxy.rlwy.net',
-            'port' => '47478'                    
+            'port' => '47478',                    
             'database' => 'railway',
             'username' => 'postgres',
             //'password' => '123',

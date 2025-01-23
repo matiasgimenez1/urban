@@ -8,17 +8,6 @@ use App\Controllers\ConsumicionController;
 // use App\Middleware\Token; 
 
 return function ($app) {
-     $app->options('/{routes:.+}', function ($request, $response, $args) {
-         return $response;
-     });
-
-     $app->add(function ($req, $res, $next) {
-         $response = $next($req, $res);
-         return $response
-            ->withHeader('Access-Control-Allow-Origin', 'https://urban-production-edbd.up.railway.app')
-            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-     });
      // Ruta para generar el token JWT
      $app->post('/api/auth/token', AuthController::class . ':generateToken');
 
@@ -60,12 +49,4 @@ return function ($app) {
        $app->post('/api/consumiciones', ConsumicionController::class . ':create');     
        $app->put('/api/consumiciones/{id}', ConsumicionController::class . ':update');  
        $app->delete('/api/consumiciones/{id}', ConsumicionController::class . ':delete'); 
-
-
-     $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function($req, $res) {
-         $handler = $this->notFoundHandler; // handle using the default Slim page not found handler
-         return $handler($req, $res);
-     });
-       
-      
 };

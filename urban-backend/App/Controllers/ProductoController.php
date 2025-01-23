@@ -143,7 +143,11 @@ class ProductoController {
                 'attributes' => [
                     'nombre' => $producto->nombre ?? null, 
                     'precio_venta' => (string) $producto->precio_venta ?? null,
-                    'estado' => (string) $producto->estado ?? null
+                    'estado' => (string) $producto->estado ?? null,
+                    'fecha_alta' => (string) $producto->fecha_alta ?? null,
+                    'usuario_alta' => (string) $producto->usuario_alta ?? null,
+                    'fecha_modif' => (string) $producto->fecha_modif ?? null,
+                    'usuario_modif' => (string) $producto->usuario_modif ?? null
                 ]
             ];
     

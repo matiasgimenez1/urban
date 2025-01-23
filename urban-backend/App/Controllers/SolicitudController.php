@@ -117,6 +117,10 @@ class SolicitudController {
                     'telefono' => $solicitud->telefono,
                     'fecha_registro' => $solicitud->fecha_registro,
                     'estado_reserva' => $solicitud->estado_reserva,
+                    'fecha_alta' => (string) $solicitud->fecha_alta ?? null,
+                    'usuario_alta' => (string) $solicitud->usuario_alta ?? null,
+                    'fecha_modif' => (string) $solicitud->fecha_modif ?? null,
+                    'usuario_modif' => (string) $solicitud->usuario_modif ?? null
                 ]
             ];
     

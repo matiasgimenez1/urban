@@ -22,7 +22,7 @@
              $password = $params['password'];
  
           // Intentar conectarse a la base de datos con las credenciales proporcionadas
-            $dsn = "pgsql:host=autorack.proxy.rlwy.net;port=47478;dbname=railway;user=postgres;password=EilJhYIdChoIIxhJKbIgqONEzCrCxDPw"; // Ajusta 'localhost' y 'paintball' según sea necesario
+            $dsn = "pgsql:host=localhost;dbname=paintball"; // Ajusta 'localhost' y 'paintball' según sea necesario
             try {
                 $db = new PDO($dsn, $username, $password); // Ajusta el nombre de usuario y contraseña de la base de datos
                // $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Configura el modo de errores para excepciones

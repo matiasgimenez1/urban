@@ -5,15 +5,20 @@ use App\Controllers\ProductoController;
 use App\Controllers\SolicitudController;
 use App\Controllers\AgendamientoController;
 use App\Controllers\ConsumicionController; 
-use App\Middleware\Token; 
+// use App\Middleware\Token; 
 
 return function ($app) {
      // Ruta para generar el token JWT
      $app->post('/api/auth/token', AuthController::class . ':generateToken');
 
     // Rutas para los usuarios
-    $app->get('/api/usuarios', UserController::class . ':index');             // Obtener todos los productos
-
+    $app->get('/api/usuarios', UserController::class . ':index');             // Obtener todos los usuarios
+    $app->get('/api/usuarios/dropdown', UserController::class . ':dropdown');
+    $app->get('/api/usuarios/{id}', UserController::class . ':show');             // Obtener todos los usuarios
+    $app->post('/api/usuarios', UserController::class . ':create');    // Crear (alta) un nuevo usuario
+    $app->put('/api/usuarios/{id}', UserController::class . ':update'); // Modificar un usuario existente
+    $app->delete('/api/usuarios/{id}', UserController::class . ':delete'); // Eliminar (baja) un usuario
+   
     // Rutas para productos
     $app->get('/api/productos', ProductoController::class . ':index');             // Obtener todos los productos
     $app->get('/api/productos/dropdown', ProductoController::class . ':dropdown');

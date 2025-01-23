@@ -23,7 +23,13 @@ const model = ref([
                 label: 'Juegos',
                 icon: 'fa-solid fa-stopwatch-20',
                 to: '/juegos'
-            },        ]
+            },    
+            {
+                label: 'Usuarios',
+                icon: 'pi pi-users',
+                to: '/jugadores'
+            },
+        ]
     }
 ]);
 

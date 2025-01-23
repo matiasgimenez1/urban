@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { getPersona, deletePersona, updatePersona, insertPersona, getMaxPersonaId } from '@/http/personas/personas-api';
+import { getPersona, deletePersona, updatePersona, insertPersona   } from '@/http/personas/personas-api';
 import { useVuelidate } from '@vuelidate/core';
 import { required, helpers } from '@vuelidate/validators';
 import { useToast } from 'primevue/usetoast';
@@ -14,14 +14,11 @@ import { useClientesStore } from '@/stores/dropdowns/clienteDropdown';
 
 const id = router.currentRoute.value.params.id;
 
-const clienteStore = useClientesStore();
+//const clienteStore = useClientesStore();
 
 const form = reactive({
-    persona_id: null,
-    estado: 'A',
-    notificar_celular: 'N',
-    notificar_email: 'N',
-    rankeable: 'N'
+    id_usuario: null,
+    estado: 'A' 
 });
 
 const toast = useToast();
@@ -35,22 +32,15 @@ const fetchData = async (fetchFunction) => {
 };
 
 const fetchPersonaData = async () => {
-    const [personaData] = await fetchData(() => Promise.all([getPersona(form.persona_id)]));
+    const [personaData] = await fetchData(() => Promise.all([getPersona(form.id_usuario)]));
     Object.assign(form, { ...personaData.data[0].attributes });
-    // Convertir `zona` al tipo de dato que el dropdown espera (por ejemplo, a string)
-    if (form.zona !== null && typeof form.zona === 'number') {
-        form.zona = String(form.zona);
-    }
+     
 };
 
-const validationRules = {
-    cedula_id: { required: helpers.withMessage(messages.required, required) },
+const validationRules = { 
     nombre: { required: helpers.withMessage(messages.required, required) },
-    direccion: { required: helpers.withMessage(messages.required, required) },
-    fecha_nac: { required: helpers.withMessage(messages.required, required) },
-    sexo: { required: helpers.withMessage(messages.required, required) },
-    celular: { required: helpers.withMessage(messages.required, required) },
-    email: { required: helpers.withMessage(messages.required, required) }
+    contrasena: { required: helpers.withMessage(messages.required, required) },
+    estado: { required: helpers.withMessage(messages.required, required) } 
 };
 
 const v$ = useVuelidate(validationRules, form);
@@ -65,7 +55,7 @@ const executeOperationWithFeedback = async (result) => {
 
 const handleDelete = async () => {
     try {
-        const result = await deletePersona({ id: form.persona_id });
+        const result = await deletePersona({ id: form.id_usuario });
 
         if (result.status === 204) {
             toast.add({ severity: 'success', summary: 'Eliminación Exitosa', life: 2000 });
@@ -85,8 +75,8 @@ const handleSave = async () => {
     if (await v$.value.$validate()) {
         let result;
         try {
-            if (id && form.persona_id) {
-                result = await updatePersona({ ...form, id: form.persona_id });
+            if (id && form.id_usuario) {
+                result = await updatePersona({ ...form, id: form.id_usuario });
             } else {
                 result = await insertPersona(form);
             }
@@ -105,19 +95,12 @@ const handleSave = async () => {
 
 const initializeComponent = async () => {
     try {
-        form.persona_id = router.currentRoute.value.params.id;
-        await clienteStore.fetchZonasClientes();
-        if (!form.persona_id) {
-            const maxIdResponse = await getMaxPersonaId();
-            if (maxIdResponse && maxIdResponse.data[0] && maxIdResponse.data[0].attributes) {
-                const maxId = parseInt(maxIdResponse.data[0].attributes.maxID) + 1;
-                form.persona_id = maxId;
-            } else {
-                form.persona_id = 1;
-            }
-        } else {
+        form.id_usuario = router.currentRoute.value.params.id;
+      
+        debugger;
+        if (form.id_usuario)  {
             await fetchPersonaData();
-        }
+        } 
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Error', detail: error.response.data.message });
     }
@@ -141,20 +124,15 @@ onMounted(async () => {
 <template>
     <div class="px-1 col-12">
         <div class="card surface-300 my-3 bg-white">
-            <h5 class="text-blue-500 text-2xl text-center">Ficha del Jugador</h5>
+            <h5 class="text-blue-500 text-2xl text-center">Ficha del Usuario</h5>
 
             <div class="p-fluid formgrid grid">
                 <div class="field col-12 md:col-1 px-1 text-center">
                     <label for="id">ID</label>
-                    <InputText v-model="form.persona_id" id="id" type="text" class="text-xs text-center" disabled />
+                    <InputText v-model="form.id_usuario" id="id" type="text" class="text-xs text-center" disabled />
                 </div>
-
-                <div class="field col-12 md:col-2 px-1 text-center">
-                    <label for="ruc">CI</label>
-
-                    <InputText v-model="form.cedula_id" id="ruc" type="text" class="text-xs text-center" />
-                    <ErrorMessages :errors="v$.cedula_id.$errors" />
-                </div>
+<!-- 
+              
                 <div class="field col-12 md:col-3 px-1 text-center">
                     <label for="Categoría">Categoría</label>
                     <Dropdown
@@ -176,110 +154,19 @@ onMounted(async () => {
                         placeholder=""
                         :style="{ width: '100%' }"
                     ></Dropdown>
-                </div>
+                </div> -->
 
-                <div class="field col-12 md:col-6 px-1">
+                <div class="field col-12 md:col-7 px-1">
                     <label for="nombre">Nombre Completo</label>
                     <InputText v-model="form.nombre" id="nombre" type="text" class="text-xs" />
                     <ErrorMessages :errors="v$.nombre.$errors" />
                 </div>
-
-                <div class="field col-12 md:col-6 px-1">
-                    <label for="direccion">Dirección</label>
-                    <InputText v-model="form.direccion" id="direccion" rows="4" class="text-xs" />
-                    <ErrorMessages :errors="v$.direccion.$errors" />
-                </div>
-
-                <div class="field col-12 md:col-2 px-1 text-center">
-                    <label for="precio_venta">Celular</label>
-                    <InputText v-model="form.celular" id="celular" type="text" class="text-xs text-center" placeholder="981222000" />
-                    <ErrorMessages :errors="v$.celular.$errors" />
-                </div>
                 <div class="field col-12 md:col-4 px-1">
-                    <label for="costo_gs">Correo</label>
-                    <InputText v-model="form.email" id="email" type="text" class="text-xs" placeholder="correo@email.com" />
-                    <ErrorMessages :errors="v$.email.$errors" />
+                    <label for="contrasena">Contraseña</label>
+                    <InputText v-model="form.contrasena" id="contrasena" type="text" class="text-xs"/>
+                    <ErrorMessages :errors="v$.contrasena.$errors" />
                 </div>
-                <div class="field col-12 md:col-2 px-1 text-center">
-                    <label for="date">Fecha de Nacimiento</label>
-                    <Calendar v-model="form.fecha_nac" id="fecha_nac" inputClass="text-center" dateFormat="dd/mm/yy" showIcon />
-                    <ErrorMessages :errors="v$.fecha_nac.$errors" />
-                </div>
-
-                <div class="field col-12 md:col-1 px-1 text-center">
-                    <label for="nombre_generico">Sexo</label>
-                    <Dropdown
-                        class="text-xs text-center"
-                        input-class="text-xs text-center"
-                        id="segmento"
-                        v-model="form.sexo"
-                        :options="[
-                            { name: 'M', code: 'M' },
-                            { name: 'F', code: 'F' }
-                        ]"
-                        optionLabel="name"
-                        optionValue="code"
-                        placeholder=""
-                        :style="{ width: '100%' }"
-                    ></Dropdown>
-                    <ErrorMessages :errors="v$.sexo.$errors" />
-                </div>
-
-                <div class="field col-12 md:col-1 px-1 text-center">
-                    <label for="nombre_generico">Notificar por Correo</label>
-                    <Dropdown
-                        class="text-xs text-center"
-                        input-class="text-xs text-center"
-                        id="segmento"
-                        v-model="form.notificar_email"
-                        :options="[
-                            { name: 'SI', code: 'S' },
-                            { name: 'NO', code: 'N' }
-                        ]"
-                        optionLabel="name"
-                        optionValue="code"
-                        placeholder=""
-                        :style="{ width: '100%' }"
-                    ></Dropdown>
-                    <ErrorMessages :errors="v$.sexo.$errors" />
-                </div>
-                <div class="field col-12 md:col-1 px-1 text-center">
-                    <label for="nombre_generico">Notificar por Celular</label>
-                    <Dropdown
-                        class="text-xs text-center"
-                        input-class="text-xs text-center"
-                        id="segmento"
-                        v-model="form.notificar_celular"
-                        :options="[
-                            { name: 'SI', code: 'S' },
-                            { name: 'NO', code: 'N' }
-                        ]"
-                        optionLabel="name"
-                        optionValue="code"
-                        placeholder=""
-                        :style="{ width: '100%' }"
-                    ></Dropdown>
-                    <ErrorMessages :errors="v$.sexo.$errors" />
-                </div>
-
-                <div class="field col-12 md:col-1 px-1 text-center">
-                    <label for="nombre_generico">Rankeable</label>
-                    <Dropdown
-                        class="text-xs text-center"
-                        input-class="text-xs text-center"
-                        id="segmento"
-                        v-model="form.rankeable"
-                        :options="[
-                            { name: 'SI', code: 'S' },
-                            { name: 'NO', code: 'N' }
-                        ]"
-                        optionLabel="name"
-                        optionValue="code"
-                        placeholder=""
-                        :style="{ width: '100%' }"
-                    ></Dropdown>
-                </div>
-
+ 
                 <div class="field col-12 md:col-2 px-1 text-center">
                     <label for="nombre">Estado</label>
                     <Dropdown
@@ -296,20 +183,9 @@ onMounted(async () => {
                         placeholder=""
                         :style="{ width: '100%' }"
                     ></Dropdown>
+                    <ErrorMessages :errors="v$.estado.$errors" />
                 </div>
-                <div class="field col-12 md:col-2 px-1">
-                    <label for="nombre_generico">Zona Geográfica</label>
-                    <Dropdown inputClass="text-xs font-normal" v-model="form.zona" :options="clienteStore.zonasClientes" optionLabel="name" optionValue="code" placeholder="">
-                        <template #option="slotProps">
-                            <div class="not-bold text-xs">{{ slotProps.option.name }} - {{ slotProps.option.code }}</div>
-                        </template>
-                    </Dropdown>
-                </div>
-
-                <div class="field col-12 md:col-10 px-1">
-                    <label for="nombre_generico">Notas</label>
-                    <Textarea v-model="form.notas" rows="2" id="notas" type="text" class="text-xs" />
-                </div>
+             
             </div>
         </div>
         <div class="card surface-300 bg-white">

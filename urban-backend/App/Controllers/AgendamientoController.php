@@ -68,7 +68,11 @@ class AgendamientoController
                     'hora_ini' => $agendamiento->hora_ini,
                     'hora_fin' => $agendamiento->hora_fin,
                     'estado' => $agendamiento->estado,
-                    'usuario_agenda' => $agendamiento->usuario_agenda
+                    'usuario_agenda' => $agendamiento->usuario_agenda,
+                    'fecha_alta' => (string) $agendamiento->fecha_alta ?? null,
+                    'usuario_alta' => (string) $agendamiento->usuario_alta ?? null,
+                    'fecha_modif' => (string) $agendamiento->fecha_modif ?? null,
+                    'usuario_modif' => (string) $agendamiento->usuario_modif ?? null
                 ],
                 'relationships' => [
                     'detalles' => [

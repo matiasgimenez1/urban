@@ -54,7 +54,7 @@ onMounted(fetchData);
 <template>
     <div class="grid my-2">
         <div class="col-12">
-            <h5 class="text-blue-500 text-2xl text-center">Personas</h5>
+            <h5 class="text-blue-500 text-2xl text-center">Usuarios</h5>
             <SearchFilter @search="onSearch" @add="onADD"></SearchFilter>
             <DataTable
                 :value="registros"
@@ -73,18 +73,18 @@ onMounted(fetchData);
                 :currentPageReportTemplate="`{first} al {last} de {totalRecords} registros   -   Pagina: {currentPage} de {totalPages}`"
                 @row-click="onRowClick"
             >
-                <Column field="attributes.nombre" header="Nombre Completo" headerClass="text-white bg-blue-500 text-sm" bodyClass=" text-black text-sm"></Column>
+              
                 <Column field="ruc" header="" :sortable="false" headerClass="text-white bg-blue-500 text-sm shadow">
                     <template #header="slotProps">
-                        <div class="flex-1 text-center">CI</div>
+                        <div class="flex-1 ">Nombre</div>
                     </template>
                     <template #body="slotProps">
-                        <div class="text-center text-sm">
-                            {{ formatNumber(slotProps.data.attributes.cedula_id) }}
+                        <div class=" text-sm">
+                            {{ (slotProps.data.attributes.nombre) }}
                         </div>
                     </template>
                 </Column>
-                <Column field="" header="" headerClass="text-white bg-blue-500 text-sm shadow" bodyClass=" text-black text-sm">
+                <!-- <Column field="" header="" headerClass="text-white bg-blue-500 text-sm shadow" bodyClass=" text-black text-sm">
                     <template #header="slotProps">
                         <div class="flex-1 text-center">Categoría</div>
                     </template>
@@ -94,10 +94,9 @@ onMounted(fetchData);
                             {{ slotProps.data.attributes.categoria }}
                         </div>
                     </template>
-                </Column>
-                <Column field="attributes.celular" header="Celular" headerClass="text-white bg-blue-500 text-sm" bodyClass=" text-black text-sm"></Column>
-
-                <Column field="attributes.direccion" header="Dirección" headerClass="text-white bg-blue-500 text-sm" bodyClass=" text-black text-sm"></Column>
+                </Column> -->
+               
+               
                 <Column field="attributes.estado" header="Estado" headerClass="text-white bg-blue-500 text-sm" bodyClass=" text-black text-sm">
                     <template #header> </template>
                     <template #body="slotProps">

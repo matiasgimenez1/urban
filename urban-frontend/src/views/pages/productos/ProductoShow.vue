@@ -153,6 +153,27 @@ onMounted(async () => {
   
                 </div>
             </div>
+            <div class="card surface-300 bg-white">
+            <h5 class="text-blue-500 text-base">Datos de Auditoría</h5>
+            <div class="p-fluid formgrid grid">
+                <div class="field col-12 md:col-2 px-1 text-center">
+                    <label for="precio_venta">Fecha de Alta</label>
+                    <InputText v-model="form.fecha_alta" id="fecha_alta" type="text" class="text-xs text-center" disabled />
+                </div>
+                <div class="field col-12 md:col-2 px-1 text-center">
+                    <label for="precio_venta">Creado por</label>
+                    <InputText v-model="form.usuario_alta" id="fecha_alta" type="text" class="text-xs text-center" disabled />
+                </div>
+                <div class="field col-12 md:col-2 px-1 text-center">
+                    <label for="costo_gs">Fecha de Mod.</label>
+                    <InputText v-model="form.fecha_modif" id="fecha_modif" type="text" class="text-xs text-center" disabled />
+                </div>
+                <div class="field col-12 md:col-3 px-1 text-center">
+                    <label for="costo_gs">Modificado por</label>
+                    <InputText v-model="form.usuario_modif" id="usuario_modif" type="text" class="text-xs text-center" disabled />
+                </div>
+            </div>
+        </div>
         </div>
     </div>
 

@@ -19,13 +19,16 @@ $app->addErrorMiddleware(true, true, true);
 
 // Paso 3: Manejar todas las solicitudes OPTIONS para permitir CORS
 // index.php
+$app->options('/{routes:.+}', function ($request, $response, $args) {
+    return $response;
+});
 
-$app->options('/{routes:.+}', function ($request, $response) {
+$app->add(function ($req, $res, $next) {
+    $response = $next($req, $res);
     return $response
-        ->withHeader('Access-Control-Allow-Origin', 'https://urban-production-edbd.up.railway.app') // Cambia este valor según el origen de tu frontend
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With') // No incluyas 'Access-Control-Allow-Origin' aquí
-        ->withHeader('Access-Control-Allow-Credentials', 'true');
+            ->withHeader('Access-Control-Allow-Origin', 'https://urban-production-edbd.up.railway.app')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
 
@@ -34,5 +37,10 @@ $app->add(new CORS());
 
 // Cargar las rutas de la aplicación
 (require __DIR__ . '/../routes/routes.php')($app);
+
+$app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function($req, $res) {
+    $handler = $this->notFoundHandler; // handle using the default Slim page not found handler
+    return $handler($req, $res);
+});
 
 $app->run();

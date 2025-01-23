@@ -11,7 +11,7 @@ class Database {
             'driver' => 'pgsql',
             'host' => 'autorack.proxy.rlwy.net',
             'port' => '47478',                    
-            'database' => 'paintball',
+            'database' => 'railway',
             'username' => 'postgres',
             'password' => 'EilJhYIdChoIIxhJKbIgqONEzCrCxDPw',
             'charset' => 'utf8',

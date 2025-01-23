@@ -7,8 +7,8 @@ use Slim\Factory\AppFactory;
 use App\Middleware\CORS;  
 
 // Cargar las variables de entorno desde .env
- $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
- $dotenv->load();
+// $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+// $dotenv->load();
 
 // Inicializar la base de datos
 new Database();
@@ -20,14 +20,14 @@ $app->addErrorMiddleware(true, true, true);
 // Paso 3: Manejar todas las solicitudes OPTIONS para permitir CORS
 // index.php
 
- $app->options('/{routes:.+}', function ($request, $response) {
-     return $response
-         //->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173') // Cambia este valor según el origen de tu frontend
-         ->withHeader('Access-Control-Allow-Origin', 'http://urban-production-edbd.up.railway.app') 
-         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-         ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With') // No incluyas 'Access-Control-Allow-Origin' aquí
-         ->withHeader('Access-Control-Allow-Credentials', 'true');
- });
+// $app->options('/{routes:.+}', function ($request, $response) {
+//     return $response
+//         //->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173') // Cambia este valor según el origen de tu frontend
+//         ->withHeader('Access-Control-Allow-Origin', 'http://urban-production-edbd.up.railway.app') 
+//         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+//         ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With') // No incluyas 'Access-Control-Allow-Origin' aquí
+//         ->withHeader('Access-Control-Allow-Credentials', 'true');
+// });
 
 
 // Registrar el middleware de CORS

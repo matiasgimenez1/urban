@@ -31,10 +31,6 @@ $app->add(function ($req, $res, $next) {
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
-
-// Registrar el middleware de CORS
-$app->add(new CORS());
-
 // Cargar las rutas de la aplicación
 (require __DIR__ . '/../routes/routes.php')($app);
 

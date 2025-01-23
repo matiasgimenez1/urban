@@ -31,7 +31,7 @@ $app->addErrorMiddleware(true, true, true);
 
 
 // Registrar el middleware de CORS
-// $app->add(new CORS());
+$app->add(new CORS());
 
 // Cargar las rutas de la aplicación
 (require __DIR__ . '/../routes/routes.php')($app);

@@ -49,4 +49,9 @@ return function ($app) {
        $app->post('/api/consumiciones', ConsumicionController::class . ':create');     
        $app->put('/api/consumiciones/{id}', ConsumicionController::class . ':update');  
        $app->delete('/api/consumiciones/{id}', ConsumicionController::class . ':delete'); 
+
+
+     
+       
+      
 };

@@ -13,7 +13,7 @@ class CORS {
 
         // Agregar encabezados CORS a todas las respuestas
         return $response
-            ->withHeader('Access-Control-Allow-Origin', '*') // Cambia este valor según el origen de tu frontend
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173') // Cambia este valor según el origen de tu frontend
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
             ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, access-token')
             ->withHeader('Access-Control-Allow-Credentials', 'true');

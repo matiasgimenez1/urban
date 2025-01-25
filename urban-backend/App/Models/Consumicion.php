@@ -19,7 +19,8 @@ class Consumicion extends Model
         'id_agendamiento',
         'producto',
         'cantidad',
-        'precio_venta'
+        'precio_venta',
+        'id_item',
     ];
 
     // public function detalles()
@@ -28,4 +29,9 @@ class Consumicion extends Model
     //                 ->where('item', $this->item);
     // }
  
+      // Relación con los detalles
+      public function detalles()
+      {
+          return $this->hasMany(Consumicion::class, 'id_agendamiento', 'id_agendamiento');
+      }
 }

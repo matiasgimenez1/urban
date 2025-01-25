@@ -145,64 +145,69 @@ class ConsumicionController {
     // }
     
     public function show(Request $request, Response $response, $args)
-{
-    try {
-        $idAgendamiento = $args['id_agendamiento'];
-        $item = $args['item'];
-
-        // Busca todas las consumiciones que coincidan con los parámetros
-        $consumiciones = Consumicion::where('id_agendamiento', $idAgendamiento)
-                        ->where('item', $item)
-                        ->orderBy('item', 'asc') // Si necesitas orden específico
-                        ->get(); // Obtener múltiples registros
-
-        // Verificar si se encontraron consumiciones
-        if ($consumiciones->isEmpty()) {
-            $response->getBody()->write(json_encode([
-                'data' => null,
-                'message' => 'Consumiciones no encontradas'
-            ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
-        }
-
-        // Formatear la respuesta
-        $responseData = [
-            'data' => [
-                'type' => 'consumicion',
-                'id' => "{$idAgendamiento}-{$item}", // Clave compuesta como ID
-                'attributes' => [
-                    'id_agendamiento' => $idAgendamiento,
-                    'item' => $item
-                ],
-                'relationships' => [
-                    'detalles' => [
-                        'data' => $consumiciones->map(function ($consumicion) {
-                            return [
-                                'type' => 'detalle',
-                                'id' => "{$consumicion->id_agendamiento}-{$consumicion->item}", // Clave compuesta como ID
-                                'attributes' => [
-                                    'producto' => $consumicion->producto,
-                                    'cantidad' => $consumicion->cantidad,
-                                    'precio_venta' => $consumicion->precio_venta
-                                ]
-                            ];
-                        })
+    {
+        try {
+            // Obtener los parámetros desde la URL
+            $idAgendamiento = $args['id_agendamiento'];
+            $item = $args['item'];
+    
+            // Buscar el agendamiento con sus detalles
+            $agendamiento = Consumicion::with('detalles')
+                ->where('id_agendamiento', $idAgendamiento)
+                ->whereHas('detalles', function ($query) use ($item) {
+                    $query->where('item', $item);
+                })
+                ->first();
+    
+            if (!$agendamiento) {
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(404)->getBody()->write(json_encode([
+                    'error' => true,
+                    'message' => 'Agendamiento o detalle no encontrado.'
+                ]));
+            }
+    
+            // Formatear la respuesta
+            $responseData = [
+                'data' => [
+                    'type' => 'agendamiento',
+                    'id' => $agendamiento->id_agendamiento,
+                    'attributes' => [
+                        'id_agendamiento' => $idAgendamiento,
+                        'item' => $item
+                    ],
+                    'relationships' => [
+                        'detalles' => [
+                            'data' => $agendamiento->detalles->map(function ($detalle) {
+                                return [
+                                    'type' => 'detalle',
+                                    'id' => $detalle->item,
+                                    'attributes' => [
+                                        'id_agendamiento' => $detalle->id_agendamiento,
+                                        'item' => $detalle->item,
+                                        'producto' => $detalle->producto,
+                                        'cantidad' => $detalle->cantidad,
+                                        'precio_venta' => $detalle->precio_venta
+                                    ]
+                                ];
+                            })
+                        ]
                     ]
                 ]
-            ]
-        ];
-
-        $response->getBody()->write(json_encode($responseData));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-    } catch (\Exception $e) {
-        $response->getBody()->write(json_encode([
-            'error' => 'Error al obtener las consumiciones',
-            'message' => $e->getMessage()
-        ]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            ];
+    
+            $response->getBody()->write(json_encode($responseData));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            $response->getBody()->write(json_encode([
+                'error' => true,
+                'message' => 'Error al obtener el agendamiento.',
+                'details' => $e->getMessage()
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
     }
-}
-
+    
 
     // Crear una nueva consumición
     public function create(Request $request, Response $response) {
@@ -222,7 +227,7 @@ class ConsumicionController {
         foreach ($input['detail'] as $detail) {
             try {
                 // Validar campos requeridos
-                if (!isset($detail['id_agendamiento'], $detail['item'], $detail['producto'], $detail['cantidad'], $detail['precio_venta'])) {
+                if (!isset($detail['id_agendamiento'], $detail['item'], $detail['producto'], $detail['cantidad'], $detail['precio_venta'], $detail['id_item'])) {
                     $errors[] = [
                         'detail' => $detail,
                         'error' => 'Faltan campos requeridos'
@@ -237,6 +242,7 @@ class ConsumicionController {
                 $consumicion->producto = $detail['producto'];
                 $consumicion->cantidad = $detail['cantidad'];
                 $consumicion->precio_venta = $detail['precio_venta'];
+                $consumicion->id_item = $detail['id_item'];
                 $consumicion->save();
     
                 $success[] = [

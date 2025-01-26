@@ -25,7 +25,7 @@
             //$dsn = "pgsql:host=localhost;dbname=paintball";
             $dsn = "pgsql:host=autorack.proxy.rlwy.net;port=47478;dbname=railway";
            try {
-               $db = new \PDO($dsn, "postgres", "123");
+               $db = new \PDO($dsn, "postgres", "EilJhYIdChoIIxhJKbIgqONEzCrCxDPw");
            } catch (Exception $e) {
                // Si la conexión falla, las credenciales son incorrectas
                $response->getBody()->write(json_encode(['message' => 'Credenciales Incorrectas']));

@@ -6,6 +6,50 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use App\Models\User;
 
 class UserController {
+
+    public function getPersonasPdf(Request $request, Response $response) {
+        try {
+            $queryParams = $request->getQueryParams();
+            $desde = isset($queryParams['desde']) ? $queryParams['desde'] : 'a';
+            $hasta = isset($queryParams['hasta']) ? $queryParams['hasta'] : 'z';
+
+            // Consultar los datos con Eloquent
+            $personas = User::whereBetween('nombre', [$desde, $hasta])
+                ->orderBy('nombre', 'asc')
+                ->get();
+
+            // Formatear la respuesta en JSON
+            $data = $personas->map(function ($persona) {
+                return [
+                    'type' => 'persona',
+                    'id' => $persona->id_usuario,
+                    'attributes' => [
+                    'nombre' => $persona->nombre,
+                    'id_usuario' => $persona->id_usuario,
+                    'contrasena' => $persona->contrasena,
+                    'estado' => $persona->estado,
+                    'fecha_alta' => $persona->fecha_alta,
+                    'usuario_alta' => $persona->usuario_alta
+                    ]
+                ];
+            });
+
+
+            $response->getBody()->write(json_encode(['data' => $data]));
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+
+        } catch (\Exception $e) {
+            $error = [
+                'error' => true,
+                'message' => 'Error al generar los datos: ' . $e->getMessage()
+            ];
+            $response->getBody()->write(json_encode($error));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+
     public function index(Request $request, Response $response) {
         try {
             $queryParams = $request->getQueryParams();

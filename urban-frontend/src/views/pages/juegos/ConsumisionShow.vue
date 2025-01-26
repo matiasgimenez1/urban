@@ -22,7 +22,8 @@ const productosData = ref([]);
 // Estado reactivo del formulario
 const form = reactive({
     id_agendamiento: idAgendamiento,
-    item: item,
+    id_item: item,
+    item: null,
     jugador: jugador,
     detail: [], // Aseguramos que `detail` sea un array vacío desde el principio
 });
@@ -31,6 +32,7 @@ const form = reactive({
 const addNewItemToDetail = () => {
     form.detail.push({
         id_agendamiento: form.id_agendamiento,
+        id_item: form.id_item, 
         item: form.detail.length + 1,
         producto: null,
         cantidad: 1,
@@ -107,7 +109,7 @@ onMounted(async () => {
                 </div>
                 <div class="field  col-12 md:col-1 px-1  text-center">
                     <label>Item</label>
-                    <InputText v-model="form.item" disabled class="text-xs text-center" />
+                    <InputText v-model="form.id_item" disabled class="text-xs text-center" />
                 </div>
                 <div class="field  col-12 md:col-6 px-1 ">
                     <label>Jugador</label>

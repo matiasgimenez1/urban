@@ -2,6 +2,20 @@ import api from '../api';
 
 //export const csrfCookie = () => api.get('/sanctum/csrf-cookie');
 
+
+export const getProductosPdf = async (params = { search: '' }) => {
+    try {
+        const response = await api.get(`/productos/pdf`, {
+            params: params
+        });
+
+        return response;
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
+    }
+};
+
 export const getProductos = async (params = {}) => {
     try {
         const response = await api.get(`/productos`, {

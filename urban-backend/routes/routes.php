@@ -13,6 +13,7 @@ return function ($app) {
 
     // Rutas para los usuarios
     $app->get('/api/usuarios', UserController::class . ':index');             // Obtener todos los usuarios
+    $app->get('/api/usuarios/pdf', UserController::class . ':getPersonasPdf');             
     $app->get('/api/usuarios/dropdown', UserController::class . ':dropdown');
     $app->get('/api/usuarios/{id}', UserController::class . ':show');             // Obtener todos los usuarios
     $app->post('/api/usuarios', UserController::class . ':create');    // Crear (alta) un nuevo usuario
@@ -21,6 +22,7 @@ return function ($app) {
    
     // Rutas para productos
     $app->get('/api/productos', ProductoController::class . ':index');             // Obtener todos los productos
+    $app->get('/api/productos/pdf', ProductoController::class . ':getProductosPdf');             
     $app->get('/api/productos/dropdown', ProductoController::class . ':dropdown');
     $app->get('/api/productos/{id}', ProductoController::class . ':show');             // Obtener todos los productos
     $app->post('/api/productos', ProductoController::class . ':create');    // Crear (alta) un nuevo producto

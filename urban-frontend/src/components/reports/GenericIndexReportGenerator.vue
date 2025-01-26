@@ -42,7 +42,7 @@
                     </tr>
                     <tr class="footer-info">
                         <td class="mt-4" :colspan="Math.floor(columnCount * 0.4)">Fin del Listado</td>
-                        <td :colspan="columnCount - Math.floor(columnCount * 0.4)" class="text-right">www.app.puntodeventa.com.py</td>
+                        <td :colspan="columnCount - Math.floor(columnCount * 0.4)" class="text-right"></td>
                     </tr>
                 </tfoot>
             </table>

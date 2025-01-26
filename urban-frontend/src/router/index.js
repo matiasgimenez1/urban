@@ -44,6 +44,18 @@ const routes = [
                 meta: { auth: true }
             },
             {
+                path: '/jugadores/pdf',
+                name: 'jugadores/pdf',
+                component: () => import('@/views/pages/personas/PersonasReportIndex.vue'),
+                meta: { auth: true }
+            },
+            {
+                path: '/productos/pdf',
+                name: 'productos/pdf',
+                component: () => import('@/views/pages/productos/ProductosReportIndex.vue'),
+                meta: { auth: true }
+            },
+            {
                 path: '/juegos',
                 name: 'juegos',
                 component: () => import('@/views/pages/juegos/JuegosIndex.vue'),

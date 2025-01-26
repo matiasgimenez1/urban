@@ -29,7 +29,24 @@ const model = ref([
                 icon: 'pi pi-users',
                 to: '/jugadores'
             },
-        ]
+            {
+                label: 'Informes',
+                icon: 'fas fa-list',
+                items: [
+                    {
+                        label: 'Usuarios',
+                        // icon: 'fa-solid fa-hourglass-half',
+                        to: '/jugadores/pdf'
+                    },
+                    {
+                        label: 'Productos',
+                        // icon: 'fa-solid fa-hourglass-half',
+                        to: '/productos/pdf'
+                    },
+             
+                ]
+            }
+        ],   
     }
 ]);
 

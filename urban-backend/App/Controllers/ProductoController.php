@@ -6,6 +6,48 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use App\Models\Producto;
 
 class ProductoController {
+
+    public function getProductosPdf(Request $request, Response $response) {
+        try {
+            $queryParams = $request->getQueryParams();
+            $desde = isset($queryParams['desde']) ? $queryParams['desde'] : 'a';
+            $hasta = isset($queryParams['hasta']) ? $queryParams['hasta'] : 'z';
+
+            // Consultar los datos con Eloquent
+            $personas = Producto::whereBetween('nombre', [$desde, $hasta])
+                ->orderBy('nombre', 'asc')
+                ->get();
+
+            // Formatear la respuesta en JSON
+            $data = $personas->map(function ($persona) {
+                return [
+                    'type' => 'producto',
+                    'id' => $persona->id_producto,
+                    'attributes' => [
+                        'nombre' => $persona->nombre,
+                        'precio_venta' => $persona->precio_venta, 
+                        'estado' => $persona->estado
+                    ]
+                ];
+            });
+
+
+            $response->getBody()->write(json_encode(['data' => $data]));
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+
+        } catch (\Exception $e) {
+            $error = [
+                'error' => true,
+                'message' => 'Error al generar los datos: ' . $e->getMessage()
+            ];
+            $response->getBody()->write(json_encode($error));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+
+
     public function index(Request $request, Response $response) {
         try {
             $queryParams = $request->getQueryParams();

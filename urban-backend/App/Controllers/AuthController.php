@@ -22,10 +22,10 @@
             $pass = $params['password'];
 
             // Credenciales del usuario administrador para conectarse a la base de datos
-           $dsn = "pgsql:host=autorack.proxy.rlwy.net;dbname=railway;port=47478";
-           
+            $dsn = "pgsql:host=localhost;dbname=paintball";
+
            try {
-               $db = new \PDO($dsn, "postgres", "EilJhYIdChoIIxhJKbIgqONEzCrCxDPw");
+               $db = new \PDO($dsn, "postgres", "123");
            } catch (Exception $e) {
                // Si la conexión falla, las credenciales son incorrectas
                $response->getBody()->write(json_encode(['message' => 'Credenciales Incorrectas']));

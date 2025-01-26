@@ -65,3 +65,16 @@ export const getMaxPersonaId = async (params = {}) => {
         throw error;
     }
 };
+
+export const getPersonasPdf = async (params = { search: '' }) => {
+    try {
+        const response = await api.get(`/usuarios/pdf`, {
+            params: params
+        });
+
+        return response;
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
+    }
+};

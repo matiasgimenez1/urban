@@ -177,7 +177,7 @@ class UserController {
                 'message' => $e->getMessage()
             ]));
     
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+          //  return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
     

@@ -22,8 +22,8 @@
             $pass = $params['password'];
 
             // Credenciales del usuario administrador para conectarse a la base de datos
-            $dsn = "pgsql:host=localhost;dbname=paintball";
-
+            //$dsn = "pgsql:host=localhost;dbname=paintball";
+            $dsn = "pgsql:host=autorack.proxy.rlwy.net;port=47478;dbname=railway";
            try {
                $db = new \PDO($dsn, "postgres", "123");
            } catch (Exception $e) {
